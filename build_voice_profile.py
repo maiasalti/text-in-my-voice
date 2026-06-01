@@ -36,6 +36,20 @@ DB_PATH = HOME / "Library" / "Messages" / "chat.db"
 
 MODEL = "claude-opus-4-8"  # used only for --analyze
 
+
+def _load_dotenv(path: Path) -> None:
+    """Load KEY=VALUE lines from a local .env so ANTHROPIC_API_KEY is found there too."""
+    if not path.exists():
+        return
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key, val = key.strip(), val.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
 # Rough emoji detector (good enough for a stat, not exhaustive).
 EMOJI_RE = re.compile(
     "[\U0001F000-\U0001FAFF"   # most emoji + supplemental symbols
@@ -195,6 +209,8 @@ def main():
     ap.add_argument("--no-analyze", action="store_true",
                     help="skip the Claude analysis step (just extract examples + stats)")
     args = ap.parse_args()
+
+    _load_dotenv(SCRIPT_DIR / ".env")
 
     if not DB_PATH.exists():
         sys.exit(f"chat.db not found at {DB_PATH}. Is Messages set up on this Mac?")

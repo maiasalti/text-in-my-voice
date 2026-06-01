@@ -22,6 +22,35 @@ from pathlib import Path
 
 import anthropic
 
+# ── env bootstrap ────────────────────────────────────────────────────────────
+# Load a local .env file so your API key works both in the terminal AND when run
+# as a background LaunchAgent (which does NOT read your shell profile / ~/.zshrc).
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+
+def _load_dotenv(path: Path) -> None:
+    if not path.exists():
+        return
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        key, val = key.strip(), val.strip().strip('"').strip("'")
+        if key and key not in os.environ:   # real env vars still win
+            os.environ[key] = val
+
+
+_load_dotenv(SCRIPT_DIR / ".env")
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    v = os.environ.get(name)
+    if v is None:
+        return default
+    return v.strip().lower() in ("1", "true", "yes", "on")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIG — tweak these
 # ─────────────────────────────────────────────────────────────────────────────
@@ -33,8 +62,8 @@ NUM_SUGGESTIONS = 3            # how many reply options to draft
 MODEL = "claude-opus-4-8"      # see README — Haiku/Sonnet are cheaper+faster for this
 EFFORT = "low"                 # low = fast & cheap; fine for short casual replies
 
-COPY_TOP_TO_CLIPBOARD = False  # pbcopy the top suggestion (paste into Messages with ⌘V)
-SEND_NOTIFICATION = False      # post a macOS notification when a draft is ready
+COPY_TOP_TO_CLIPBOARD = _env_bool("DRAFTER_CLIPBOARD", False)  # ⌘V the top option; or set DRAFTER_CLIPBOARD=1
+SEND_NOTIFICATION = _env_bool("DRAFTER_NOTIFY", False)         # macOS notification; or set DRAFTER_NOTIFY=1
 
 # Contact filtering. Matching is case-insensitive substring against the sender's
 # handle (phone/email) AND the chat name/identifier.
@@ -53,7 +82,6 @@ USE_DB_COPY = False
 # ─────────────────────────────────────────────────────────────────────────────
 
 HOME = Path.home()
-SCRIPT_DIR = Path(__file__).resolve().parent
 DB_PATH = HOME / "Library" / "Messages" / "chat.db"
 # Your voice lives in ./voice/ — generate it with build_voice_profile.py, or
 # copy the .template.md files and edit them. Override the dir with $VOICE_DIR.

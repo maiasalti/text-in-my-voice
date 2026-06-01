@@ -64,8 +64,15 @@ cd text-in-my-voice
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY="sk-ant-..."   # your real key, not this placeholder
 ```
+
+Then give it your API key. Easiest is a local `.env` file (gitignored, and it
+works both in the terminal and for the background service below):
+```bash
+cp .env.example .env
+# open .env and replace sk-ant-your-real-key-here with your real key
+```
+Or just export it for the current shell: `export ANTHROPIC_API_KEY="sk-ant-..."`.
 
 ### 3. Build your voice
 This reads your own sent messages and writes `voice/voice-profile.md` +
@@ -88,6 +95,33 @@ on the newest message at launch, so it won't spam drafts for your whole history.
 Stop with **ctrl-c**.
 
 ---
+
+## Running in the background
+
+`python watch.py` runs in the foreground — closing the terminal stops it. To keep
+it running without a terminal open:
+
+**Quick (survives closing the tab, not logout):**
+```bash
+nohup python watch.py > watcher.log 2>&1 &
+tail -f watcher.log     # watch it;  pkill -f watch.py  to stop
+```
+
+**Proper background service (starts at login, auto-restarts) — macOS LaunchAgent:**
+```bash
+cp launchd/com.imessage-reply-drafter.plist.example \
+   ~/Library/LaunchAgents/com.imessage-reply-drafter.plist
+# edit that file: replace /Users/YOUR_USERNAME/... with your real repo path
+launchctl load -w ~/Library/LaunchAgents/com.imessage-reply-drafter.plist
+```
+- Put your key in `.env` (the agent can't read your shell profile).
+- The plist sets `DRAFTER_NOTIFY=1`, so drafts arrive as macOS notifications
+  (there's no live terminal feed when it runs this way); `watcher.log` has the full output.
+- **Full Disk Access:** the agent runs `.venv/bin/python`, and *that binary* needs
+  Full Disk Access to read `chat.db` — Terminal's permission doesn't transfer. If
+  `watcher.log` shows `unable to open database file`, add the python binary in
+  System Settings → Privacy & Security → Full Disk Access.
+- Stop/remove it: `launchctl unload ~/Library/LaunchAgents/com.imessage-reply-drafter.plist`.
 
 ## Configuration
 

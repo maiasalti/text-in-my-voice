@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Background service template. To use it:
+    1. Copy to ~/Library/LaunchAgents/com.imessage-reply-drafter.plist
+    2. Replace BOTH absolute paths below with YOUR repo path
+       (run `pwd` inside the repo, and note .venv/bin/python).
+    3. Put your key in the repo's .env file (the script loads it).
+    4. launchctl load -w ~/Library/LaunchAgents/com.imessage-reply-drafter.plist
+  Note: the Python binary needs Full Disk Access to read chat.db (see README).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.imessage-reply-drafter</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/YOUR_USERNAME/imessage-reply-drafter/.venv/bin/python</string>
+    <string>/Users/YOUR_USERNAME/imessage-reply-drafter/watch.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/YOUR_USERNAME/imessage-reply-drafter</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>DRAFTER_NOTIFY</key>
+    <string>1</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/YOUR_USERNAME/imessage-reply-drafter/watcher.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/YOUR_USERNAME/imessage-reply-drafter/watcher.log</string>
+</dict>
+</plist>
