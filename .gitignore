@@ -1,0 +1,14 @@
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# secrets — never commit
+.env
+*.key
+
+# personal data — generated locally from your own messages, never commit
+voice/voice-profile.md
+voice/examples.md
+voice/*.txt
