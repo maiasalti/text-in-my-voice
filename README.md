@@ -47,52 +47,37 @@ where sending the content to an API isn't OK.
 
 ---
 
-## Setup
+## Install
 
-### 1. Requirements
-- A Mac with Messages set up (iMessage in `~/Library/Messages/chat.db`).
-- **Full Disk Access** for your terminal app (Terminal.app / iTerm), so it can
-  read `chat.db`. System Settings → Privacy & Security → Full Disk Access → add
-  your terminal. (Without this you'll get `unable to open database file`.)
-- Python 3.9+.
-- An Anthropic API key: https://console.anthropic.com/
-
-### 2. Install
 ```bash
 git clone https://github.com/maiasalti/text-in-my-voice.git
 cd text-in-my-voice
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+./setup.sh
 ```
 
-Then give it your API key. Easiest is a local `.env` file (gitignored, and it
-works both in the terminal and for the background service below):
-```bash
-cp .env.example .env
-# open .env and replace sk-ant-your-real-key-here with your real key
-```
-Or just export it for the current shell: `export ANTHROPIC_API_KEY="sk-ant-..."`.
+`setup.sh` does everything it can for you:
+- creates the Python virtualenv and installs dependencies,
+- prompts for your Anthropic API key (hidden input) and saves it to `.env`,
+- installs a GUI-capable Python for the sticky note (via Homebrew if present),
+- builds your voice profile from your own sent messages,
+- installs and starts the background services (watcher + sticky) so they run at login.
 
-### 3. Build your voice
-This reads your own sent messages and writes `voice/voice-profile.md` +
-`voice/examples.md`:
-```bash
-python build_voice_profile.py            # extract + analyse with Claude
-# or, no API analysis — just extract examples and edit the profile yourself:
-python build_voice_profile.py --no-analyze
-```
-Useful flags: `--limit 20000` (scan more history), `--sample-size 200` (more
-examples), `--out-dir voice` (where to write). You can always hand-edit the two
-files afterwards — or copy `voice/*.template.md` and write them from scratch.
+It's safe to re-run — it skips whatever's already done.
 
-### 4. Run the watcher
-```bash
-python watch.py
-```
-Then text yourself from another device, or wait for a real message. It baselines
-on the newest message at launch, so it won't spam drafts for your whole history.
-Stop with **ctrl-c**.
+**The one thing it can't automate is Full Disk Access** — macOS only lets you grant
+that from System Settings. If it's not set, `setup.sh` opens the right pane and
+tells you exactly which binary to add; toggle it on and run `./setup.sh` again.
+
+Requirements: a Mac with Messages (`~/Library/Messages/chat.db`), Python 3.9+, and
+an [Anthropic API key](https://console.anthropic.com/). Homebrew is optional (only
+needed for the sticky-note window).
+
+### Manual / advanced
+
+If you'd rather not use the installer: `python3 -m venv .venv && .venv/bin/pip
+install -r requirements.txt`, put your key in `.env` (`cp .env.example .env`),
+run `python build_voice_profile.py` to build your voice, then `python watch.py`
+to run it in the foreground. The background-service and sticky details are below.
 
 ---
 
