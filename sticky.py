@@ -17,6 +17,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DRAFT_FILE = SCRIPT_DIR / "latest_draft.json"
+PAUSE_FILE = SCRIPT_DIR / "paused.flag"   # presence pauses the watcher
 
 BG = "#FFF6B8"      # sticky-note yellow
 LINE = "#E8DA7A"
@@ -40,10 +41,39 @@ class Sticky:
         self.root.minsize(300, 200)
         self.note = None
         self._mtime = -1.0
+        self.header = tk.Frame(self.root, bg=BG)
+        self.header.pack(fill="x", padx=14, pady=(12, 0))
+        self.status = tk.Label(self.header, bg=BG, font=("Helvetica", 11, "bold"))
+        self.status.pack(side="left")
+        self.pause_btn = tk.Button(self.header, relief="flat", bd=0, padx=12, pady=4,
+                                   font=("Helvetica", 11, "bold"), highlightthickness=0,
+                                   command=self._toggle_pause)
+        self.pause_btn.pack(side="right")
         self.body = tk.Frame(self.root, bg=BG)
-        self.body.pack(fill="both", expand=True, padx=14, pady=14)
+        self.body.pack(fill="both", expand=True, padx=14, pady=(6, 14))
+        self._refresh_pause_ui()
         self._render_waiting()
         self._poll()
+
+    def _toggle_pause(self):
+        if PAUSE_FILE.exists():
+            PAUSE_FILE.unlink(missing_ok=True)
+        else:
+            PAUSE_FILE.write_text("paused")
+        self._refresh_pause_ui()
+
+    def _refresh_pause_ui(self):
+        paused = PAUSE_FILE.exists()
+        self.pause_btn.config(
+            text="▶ resume" if paused else "⏸ pause",
+            bg="#A6D8A0" if paused else LINE,
+            fg="#19451a" if paused else "#5a4f00",
+            activebackground="#92cc8c" if paused else "#d8c95a",
+        )
+        self.status.config(
+            text="⏸ PAUSED" if paused else "● watching",
+            fg="#b00000" if paused else "#5a8f00",
+        )
 
     def _clear(self):
         for w in self.body.winfo_children():
@@ -110,6 +140,7 @@ class Sticky:
                     self.root.lift()
         except Exception:
             pass
+        self._refresh_pause_ui()   # reflect pause state if toggled elsewhere
         self.root.after(POLL_MS, self._poll)
 
     def run(self):

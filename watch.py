@@ -90,6 +90,8 @@ VOICE_PROFILE = VOICE_DIR / "voice-profile.md"
 VOICE_EXAMPLES = VOICE_DIR / "examples.md"
 # The latest draft is published here for the sticky-note window (sticky.py).
 LATEST_DRAFT_PATH = SCRIPT_DIR / "latest_draft.json"
+# Presence of this file pauses drafting (toggled by the sticky's pause button).
+PAUSE_FILE = SCRIPT_DIR / "paused.flag"
 
 # Apple absolute time (nanoseconds since 2001-01-01) -> unix epoch seconds.
 APPLE_EPOCH = 978307200
@@ -459,6 +461,7 @@ def main():
         conn.close()
     print(f"  watching for new messages (baseline rowid={last_rowid})… ctrl-c to stop\n")
 
+    last_paused = None
     try:
         while True:
             time.sleep(POLL_INTERVAL)
@@ -469,8 +472,14 @@ def main():
                     conn.row_factory = sqlite3.Row
 
                 rows = query_new_messages(conn, last_rowid)
+                paused = PAUSE_FILE.exists()
+                if paused != last_paused:
+                    print("⏸ paused — not drafting" if paused else "▶ watching", flush=True)
+                    last_paused = paused
                 for row in rows:
                     last_rowid = max(last_rowid, row["rowid"])
+                    if paused:
+                        continue                       # paused: skip drafting, keep baseline current
                     if row["is_from_me"]:
                         continue                       # only react to received messages
                     if row["chat_id"] is None:

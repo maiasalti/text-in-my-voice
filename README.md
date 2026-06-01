@@ -126,7 +126,9 @@ launchctl load -w ~/Library/LaunchAgents/com.imessage-reply-drafter.plist
 ## Sticky-note window (optional)
 
 `sticky.py` is an always-on-top yellow note that shows the latest drafted reply
-and updates live. Click a suggestion to copy it, then ⌘V into Messages.
+and updates live. Click a suggestion to copy it, then ⌘V into Messages. It also
+has a **⏸ pause / ▶ resume** button — pausing stops the watcher from drafting
+(it keeps tracking new messages so resuming doesn't replay a backlog).
 
 `watch.py` publishes each draft to `latest_draft.json`, which the sticky reads.
 

@@ -13,5 +13,6 @@ voice/voice-profile.md
 voice/examples.md
 voice/*.txt
 latest_draft.json
+paused.flag
 watcher.log
 sticky.log
