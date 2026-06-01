@@ -88,6 +88,8 @@ DB_PATH = HOME / "Library" / "Messages" / "chat.db"
 VOICE_DIR = Path(os.environ.get("VOICE_DIR", SCRIPT_DIR / "voice"))
 VOICE_PROFILE = VOICE_DIR / "voice-profile.md"
 VOICE_EXAMPLES = VOICE_DIR / "examples.md"
+# The latest draft is published here for the sticky-note window (sticky.py).
+LATEST_DRAFT_PATH = SCRIPT_DIR / "latest_draft.json"
 
 # Apple absolute time (nanoseconds since 2001-01-01) -> unix epoch seconds.
 APPLE_EPOCH = 978307200
@@ -388,6 +390,23 @@ def show(row, context, result):
             print(f"          {cont}")
 
 
+def write_latest_draft(row, result):
+    """Publish the latest draft to a JSON file for the sticky-note window."""
+    try:
+        data = {
+            "ts": datetime.now().strftime("%H:%M:%S"),
+            "sender": sender_label(row),
+            "chat": chat_label(row),
+            "incoming": message_text(row["text"], row["attributed_body"]) or "",
+            "should_reply": bool(result.get("should_reply", True)),
+            "reason": result.get("reason", ""),
+            "suggestions": result.get("suggestions", []),
+        }
+        LATEST_DRAFT_PATH.write_text(json.dumps(data), encoding="utf-8")
+    except Exception:
+        pass
+
+
 def copy_to_clipboard(text: str):
     try:
         subprocess.run(["pbcopy"], input=text.encode("utf-8"), check=True)
@@ -470,6 +489,7 @@ def main():
                         continue
 
                     show(row, context, result)
+                    write_latest_draft(row, result)
 
                     if result.get("should_reply", True) and result.get("suggestions"):
                         top = result["suggestions"][0]

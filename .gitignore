@@ -12,3 +12,6 @@ __pycache__/
 voice/voice-profile.md
 voice/examples.md
 voice/*.txt
+latest_draft.json
+watcher.log
+sticky.log
