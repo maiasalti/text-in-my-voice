@@ -81,23 +81,15 @@ class Sticky:
                          font=("Helvetica", 10)).pack(anchor="w", pady=(3, 0))
             return
 
-        tk.Label(self.body, text="tap text to copy  ·  ⌘V button pastes into Messages",
-                 bg=BG, fg="#7a6b00", font=("Helvetica", 10)).pack(anchor="w", pady=(0, 4))
+        tk.Label(self.body, text="tap one to copy:", bg=BG, fg="#7a6b00",
+                 font=("Helvetica", 10)).pack(anchor="w", pady=(0, 4))
         for i, s in enumerate(d.get("suggestions", []), 1):
-            row = tk.Frame(self.body, bg=BG)
-            row.pack(fill="x", pady=3)
             tk.Button(
-                row, text=f"{i})  {s}", bg="white", fg="#1d1d1d",
-                wraplength=250, justify="left", anchor="w", relief="flat", bd=0,
+                self.body, text=f"{i})  {s}", bg="white", fg="#1d1d1d",
+                wraplength=300, justify="left", anchor="w", relief="flat", bd=0,
                 padx=11, pady=9, font=("Helvetica", 12), activebackground=LINE,
                 highlightthickness=0, command=lambda t=s: self._copy(t),
-            ).pack(side="left", fill="x", expand=True)
-            tk.Button(
-                row, text="⌘V", bg=LINE, fg="#5a4f00", relief="flat", bd=0,
-                padx=10, pady=9, font=("Helvetica", 11, "bold"),
-                activebackground="#d8c95a", highlightthickness=0,
-                command=lambda t=s: self._paste(t),
-            ).pack(side="left", padx=(5, 0))
+            ).pack(fill="x", pady=3)
         self.note = tk.Label(self.body, text="", bg=BG, fg="#2a7a00", wraplength=330,
                              justify="left", font=("Helvetica", 11, "bold"))
         self.note.pack(anchor="w", pady=(8, 0))
@@ -106,30 +98,6 @@ class Sticky:
         pbcopy(text)
         if self.note is not None:
             self.note.config(text="✓ copied — click the Messages box and ⌘V")
-
-    def _paste(self, text: str):
-        """Copy, bring Messages to the front, and ⌘V into the open chat.
-        Never presses Return — it drafts into the box, it does not send.
-        Needs Accessibility permission (see README); pastes into whatever
-        conversation is currently focused in Messages."""
-        pbcopy(text)
-        script = (
-            'tell application "Messages" to activate\n'
-            'delay 0.15\n'
-            'tell application "System Events" to keystroke "v" using command down'
-        )
-        try:
-            r = subprocess.run(["osascript", "-e", script],
-                               capture_output=True, text=True)
-            if r.returncode == 0:
-                msg = "→ pasted into Messages — review, then hit return to send"
-            else:
-                msg = "paste blocked — enable Accessibility for Python (see README)"
-            if self.note is not None:
-                self.note.config(text=msg)
-        except Exception:
-            if self.note is not None:
-                self.note.config(text="paste failed")
 
     def _poll(self):
         try:

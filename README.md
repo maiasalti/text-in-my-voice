@@ -126,8 +126,7 @@ launchctl load -w ~/Library/LaunchAgents/com.imessage-reply-drafter.plist
 ## Sticky-note window (optional)
 
 `sticky.py` is an always-on-top yellow note that shows the latest drafted reply
-and updates live. Click a suggestion to copy it; click its **⌘V** button to copy
-*and* paste it into the front Messages conversation (it never presses send).
+and updates live. Click a suggestion to copy it, then ⌘V into Messages.
 
 `watch.py` publishes each draft to `latest_draft.json`, which the sticky reads.
 
@@ -140,14 +139,8 @@ brew install python-tk@3.13
 
 To keep it on screen permanently / at login, use the LaunchAgent template in
 `launchd/com.imessage-reply-drafter-sticky.plist.example` (same install pattern
-as the watcher). The sticky needs **no Full Disk Access** — it only reads a local
-file.
-
-**The ⌘V paste button** needs **Accessibility** permission for the Python binary
-(System Settings → Privacy & Security → Accessibility — add the Python.app for
-your interpreter). It pastes into whatever conversation is currently focused in
-Messages, so make sure the right chat is open. Plain "click to copy" works
-without any permission.
+as the watcher). The sticky needs **no special permissions** — it only reads a
+local file and writes to the clipboard.
 
 ## Configuration
 

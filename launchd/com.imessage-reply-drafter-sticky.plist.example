@@ -11,9 +11,8 @@
     2. Copy to ~/Library/LaunchAgents/com.imessage-reply-drafter-sticky.plist
        and replace the paths below with your own.
     3. launchctl load -w ~/Library/LaunchAgents/com.imessage-reply-drafter-sticky.plist
-  The sticky needs NO Full Disk Access (it only reads latest_draft.json).
-  The optional "paste into Messages" (⌘V) button needs Accessibility permission
-  for the Python binary (System Settings → Privacy & Security → Accessibility).
+  The sticky needs NO special permissions (it only reads latest_draft.json
+  and writes to the clipboard).
 -->
 <plist version="1.0">
 <dict>
