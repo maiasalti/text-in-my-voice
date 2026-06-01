@@ -28,6 +28,8 @@
   <dict>
     <key>DRAFTER_NOTIFY</key>
     <string>1</string>
+    <key>PYTHONUNBUFFERED</key>
+    <string>1</string>
   </dict>
 
   <key>RunAtLoad</key>
